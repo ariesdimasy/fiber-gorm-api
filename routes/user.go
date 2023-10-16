@@ -23,27 +23,22 @@ func CreateResponseUser(userModel models.User) User {
 }
 
 func UserList(c *fiber.Ctx) error {
-	var users []models.User
-	var err error
-
-	if err != nil {
-		return c.Status(500).JSON(err.Error())
-	}
+	var users []User
 
 	query := database.Database.Db
 
-	query.Find(&users)
+	query.Select("ID", "FirstName", "LastName").Find(&users)
 	if query.Error != nil {
 		return c.Status(500).JSON(query.Error)
 	}
 
-	responseUsers := []User{}
-	for _, user := range users {
-		responseUser := CreateResponseUser(user)
-		responseUsers = append(responseUsers, responseUser)
-	}
+	// responseUsers := []User{}
+	// for _, user := range users {
+	// 	responseUser := CreateResponseUser(user)
+	// 	responseUsers = append(responseUsers, responseUser)
+	// }
 
-	return c.Status(200).JSON(responseUsers)
+	return c.Status(200).JSON(users)
 }
 
 func GetUserDetail(c *fiber.Ctx) error {
