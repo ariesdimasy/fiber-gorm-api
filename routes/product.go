@@ -14,6 +14,11 @@ type Product struct {
 	SerialNumber string `json:"serial_number"`
 }
 
+type ProductRequest struct {
+	Name         string `json:"name" form:"name"`
+	SerialNumber string `json:"serial_number" form:"serial_number"`
+}
+
 func CreateResponseProduct(productModel Product) Product {
 	return Product{
 		ID:           productModel.ID,
@@ -63,12 +68,72 @@ func ProductCreate(c *fiber.Ctx) error {
 
 func ProductDetail(c *fiber.Ctx) error {
 
-	productId := c.Params("id")
+	var product Product
+	productId, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+			"data":    "",
+		})
+	}
 
-	fmt.Println(productId)
+	query := database.Database.Db
+
+	query.First(&product, " id = ? ", productId)
+	if query.Error != nil {
+		return c.Status(500).JSON(query.Error)
+	}
+
+	if product.ID == 0 {
+		return c.Status(404).JSON(fiber.Map{
+			"message": "product not found",
+			"data":    nil,
+		})
+	}
 
 	return c.Status(200).JSON(fiber.Map{
-		"message": "product Create Success",
-		"data":    productId,
+		"message": "product fetch detail Success",
+		"data":    product,
+	})
+}
+
+func ProductUpdate(c *fiber.Ctx) error {
+
+	productId, err := c.ParamsInt("id")
+
+	productRequest := new(ProductRequest)
+	errReq := c.BodyParser(productRequest)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+			"data":    "",
+		})
+	}
+
+	if errReq != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": errReq.Error(),
+			"data":    "",
+		})
+	}
+
+	query := database.Database.Db
+
+	query.Where("id = ?", productId).Updates(&Product{
+		Name:         productRequest.Name,
+		SerialNumber: productRequest.SerialNumber,
+	})
+
+	if query.Error != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": query.Error,
+			"data":    "",
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "product updated success",
+		"data":    "",
 	})
 }
