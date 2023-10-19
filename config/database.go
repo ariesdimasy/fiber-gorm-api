@@ -13,7 +13,9 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func ConnecDb() *gorm.DB {
+var DB *gorm.DB
+
+func ConnecDb() {
 	dsn := "root:@tcp(127.0.0.1:3306)/mp_backend?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	//db, err := gorm.Open(sqlite.Open("api.db"), &gorm.Config{})
@@ -30,5 +32,5 @@ func ConnecDb() *gorm.DB {
 
 	db.AutoMigrate(&models.User{}, &models.Product{}, &models.Order{})
 
-	return db
+	DB = db
 }

@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/ariesdimasy/fiber-gorm-api/config"
-	"github.com/ariesdimasy/fiber-gorm-api/database"
 	"github.com/ariesdimasy/fiber-gorm-api/routes"
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,8 +18,7 @@ func welcome(c *fiber.Ctx) error {
 
 	var users []User
 
-	db := config.ConnecDb()
-
+	db := config.DB
 	db.Find(&users)
 
 	if db.Error != nil {
@@ -42,14 +41,18 @@ func setupRoutes(app *fiber.App) {
 	app.Get("/api/users/:id", routes.GetUserDetail)
 	app.Post("/api/users", routes.CreateUser)
 
-	app.Get("/api/products", routes.ProductList)
+	app.Get("/api/products", func(c *fiber.Ctx) error {
+		fmt.Println("Iam Middleware GET products")
+		return c.Next()
+	}, routes.ProductList)
 	app.Get("/api/products/:id<int>", routes.ProductDetail)
 	app.Post("/api/products", routes.ProductCreate)
 	app.Put("/api/products/:id<int>", routes.ProductUpdate)
 }
 
 func main() {
-	database.ConnectDb()
+
+	config.ConnecDb()
 
 	app := fiber.New()
 

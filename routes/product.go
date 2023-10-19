@@ -3,7 +3,7 @@ package routes
 import (
 	"fmt"
 
-	"github.com/ariesdimasy/fiber-gorm-api/database"
+	"github.com/ariesdimasy/fiber-gorm-api/config"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -30,7 +30,7 @@ func CreateResponseProduct(productModel Product) Product {
 func ProductList(c *fiber.Ctx) error {
 	var products []Product
 
-	query := database.Database.Db
+	query := config.DB
 
 	query.Select("id", "name", "serial_number").Find(&products)
 	fmt.Println(query.Statement.Vars...)
@@ -48,7 +48,7 @@ func ProductList(c *fiber.Ctx) error {
 func ProductCreate(c *fiber.Ctx) error {
 	var product Product
 
-	query := database.Database.Db
+	query := config.DB
 
 	if err := c.BodyParser(&product); err != nil {
 		return c.Status(400).JSON(err.Error())
@@ -77,9 +77,9 @@ func ProductDetail(c *fiber.Ctx) error {
 		})
 	}
 
-	query := database.Database.Db
+	query := config.DB
 
-	query.First(&product, " id = ? ", productId)
+	query.Where(" id = ? ", productId).First(&product)
 	if query.Error != nil {
 		return c.Status(500).JSON(query.Error)
 	}
@@ -118,7 +118,7 @@ func ProductUpdate(c *fiber.Ctx) error {
 		})
 	}
 
-	query := database.Database.Db
+	query := config.DB
 
 	query.Where("id = ?", productId).Updates(&Product{
 		Name:         productRequest.Name,

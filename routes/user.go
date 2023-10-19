@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/ariesdimasy/fiber-gorm-api/database"
+	"github.com/ariesdimasy/fiber-gorm-api/config"
 	"github.com/ariesdimasy/fiber-gorm-api/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -25,7 +25,7 @@ func CreateResponseUser(userModel models.User) User {
 func UserList(c *fiber.Ctx) error {
 	var users []User
 
-	query := database.Database.Db
+	query := config.DB
 
 	query.Select("ID", "FirstName", "LastName").Find(&users)
 	if query.Error != nil {
@@ -50,7 +50,7 @@ func GetUserDetail(c *fiber.Ctx) error {
 		return c.Status(400).JSON("Please ensure that :id is an integer")
 	}
 
-	query := database.Database.Db
+	query := config.DB
 
 	query.Find(&user, "id = ?", id)
 	if user.ID == 0 {
@@ -68,7 +68,7 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(400).JSON(err.Error())
 	}
 
-	query := database.Database.Db
+	query := config.DB
 
 	query.Create(&user)
 	responseUser := CreateResponseUser(user)
